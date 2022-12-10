@@ -1,22 +1,39 @@
 -- add this flag -i../libs when compiling prob2.hs
 import Cp
 import Exp
+import List
 import Cp2223data
 
--- para efeitos de teste.
-test = take 10 acm_ccs
+test  = take 10 acm_ccs 
+test2 = take 30 acm_ccs  
+-- Parte 1
+out :: [String] -> Either String (String,[String])
+out [s] = i1 s
+out (h:t) = i2 (h,t)
 
--- Esta função recebe uma certa string e devolve um par com a informação do nível da
--- árvore para onde vai a string e a respectiva string sem os espaços no início.
-getLevel = (((flip div 4).length) >< id).(span (==' '))
-
-
--- gene da função tax
-gene :: [String] -> Either String (String,[[String]]) -- gene :: S* -> S + S* X (S*)*
+gene :: [String] -> Either String (String,[[String]])
 gene [] = i1 ""
-gene [s] = i1 s
-gene l = undefined
+gene l = ((id -|- id >< aux).out) l 
+    where
+        getLevel = (flip div 4).length.(takeWhile (==' ')) -- indica o nível da árvore onde uma certa string vai ficar (raíz é o nível 0)
+        upLevel = map (drop 4) -- tira os primeiros 4 espaços de cada string de uma lista de strings
+        aux = anaList g -- a função aux foi inspirada na função chunksOf de List.hs 
+            where
+                g [] = i1()
+                g (h:t) = let (x,y) = span ((>1).getLevel) t in i2(upLevel (h:x), y)
 
--- função da pergunta 1 deste problema
+
 tax :: [String] -> Exp String String
 tax = anaExp (gene)
+
+-- Parte 2
+post :: Exp String String -> [[String]] -- incompleta
+post tr = aux (tr)
+    where
+        aux (Var x) = [[x]]
+        aux (Term x []) = [[x]]
+        aux (Term x l) = map (x:) (concat(map aux l))
+
+
+tudo ::[String] -> [[String]]
+tudo = post.tax
