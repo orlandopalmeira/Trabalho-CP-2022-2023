@@ -39,6 +39,7 @@ post tr = (tail.rr.concat.map prefixes) (aux tr)
         aux (Term x []) = [[x]]
         aux (Term x l) = map (x:) (concat(map aux l)) -}
 
+-- Versão mais bonita mas possivelmente mais difícil de explicar
 post :: Exp String String -> [[String]]
 post (Var v) = [[v]]
 post (Term v []) = [[v]]
