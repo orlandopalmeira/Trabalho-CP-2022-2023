@@ -8,30 +8,20 @@ type Point = (Double, Double)
 
 
 squares :: (Square, Int) -> Rose Square
-squares (sq@((x, y), l), 0) = let c = l/3 in Rose ((x+c,y+c),c) []
-squares (sq@((x, y), l), n) = let c = l/3 in Rose ((x+c,y+c),c) $ map squares [
-    (((x,y),c),n-1),
-    (((x,y+c),c),n-1),
-    (((x,y+2*c),c),n-1),
-    (((x+c,y),c),n-1),
-    (((x+c,y+2*c),c),n-1),
-    (((x+2*c,y),c),n-1),
-    (((x+2*c,y+c),c),n-1),
-    (((x+2*c,y+2*c),c),n-1)
-  ]
+squares = anaRose gsq
 
 
-rose2List :: Rose a -> [a]
-rose2List (Rose x []) = [x]
-rose2List (Rose x rs) = x : concatMap rose2List rs
+rose2List :: Rose Square -> [Square]
+rose2List = cataRose gr2l
 
 
 gr2l :: (Square,[[Square]]) -> [Square]
 gr2l (sq,l) = sq:concat l
 
+
 gsq :: (Square,Int) -> (Square,[(Square,Int)])
-gsq (sq@((x, y), l),0) = let c = l/3 in (((x+c,y+c),c),[])
-gsq (sq@((x, y), l),n) = (((x+c,y+c),c),nexts)
+gsq (((x, y), l),0) = let c = l/3 in (((x+c,y+c),c),[])
+gsq (((x, y), l),n) = (((x+c,y+c),c),nexts)
     where
         c = l/3
         nexts = [(((x,y),c),n-1),
@@ -47,6 +37,7 @@ gsq (sq@((x, y), l),n) = (((x+c,y+c),c),nexts)
 sierpinski::(Square,Int) -> [Square]
 sierpinski = hyloRose gr2l gsq
 
+
 sierp4 = drawSq (sierpinski (((0,0),32),3))
 constructSierp5 = do {
     drawSq (sierpinski (((0,0),32),0));
@@ -61,12 +52,15 @@ constructSierp5 = do {
     await;
 }
 
+
 drawSq x = picd'' [Svg.scale 0.44 (0,0) (x>>=sq2svg)]
 sq2svg (p,l) = (color "#67AB9F" . polyg) [p,p .+ (0,l),p .+ (l,l),p .+ (l,0)]
 await = threadDelay 1000000 
 
+
 carpets :: Int -> [[Square]]
 carpets n = [sierpinski (((0,0),32),i) | i <- [0..n-1]]
+
 
 present ::[[Square]] -> IO [()]
 present [] = return []
@@ -75,6 +69,7 @@ present (x:xs) = do{
     await;
     present xs;
 }
+
 
 constructSierp :: Int -> IO [()]
 constructSierp = present.carpets
