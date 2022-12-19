@@ -25,16 +25,16 @@ Logo,
     (f a b c) (n+1) = (f1 a b c) n
 -}
 
-fbl a b c = p2.(for loop initial) 
+fbl a b c = p2.(for (loop a b c) initial) 
     where
-        f2 0 = 1
-        f2 n = (a * f2 (n-1)) + (b * f1 (n-1)) + (c * f' (n-1))
+        f2 _ _ _ 0 = 1
+        f2 x y z n = (x * f2 x y z (n-1)) + (y * f1 x y z (n-1)) + (z * fn x y z (n-1))
 
-        f1 0 = 1
-        f1 n = f2 (n-1)
+        f1 x y z 0 = 1
+        f1 x y z n = f2 x y z (n-1)
 
-        f' 0 = 0
-        f' n = f1 (n-1)
+        fn x y z 0 = 0
+        fn x y z n = f1 x y z (n-1)
 
-        loop ((f2,f1),f') = ((a*f2 + b*f1 + c*(f'), f2),f1) 
+        loop x y z ((f2,f1),fn) = ((x*f2 + y*f1 + z*fn, f2),f1) 
         initial = ((1,1),0) 

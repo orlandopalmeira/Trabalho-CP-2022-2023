@@ -207,7 +207,7 @@ import LTree
 import Rose hiding (g)
 import Probability
 import Data.List hiding (find)
-import Data.List.Split hiding (split,chunksOf) 
+--import Data.List.Split hiding (split,chunksOf) 
 import Svg hiding (for,wrap)
 import Control.Concurrent
 import Cp2223data
@@ -1116,64 +1116,91 @@ Valoriza-se a escrita de \emph{pouco} código que corresponda a soluções
 simples e elegantes.
 
 \subsection*{Problema 1}
-Para podermos utilizar a lei da recursividade mútua de modo a converter a função \textit{f} 
-num ciclo \textit{for}, tivemos de definir as seguintes funções auxiliares para fazer uma mudança de variável. 
-\textit{
-    (f1 a b c) n = (f a b c) (n+1)
-    (f2 a b c) n = (f a b c) (n+2)
-}
-Logo,
-\textit{
-    (f2 a b c) 0 = 1
-    (f2 a b c) (n+1) = a * (f2 a b c) n + b * (f1 a b c) n + c * f a b c n
+Para recorrer à lei da recursividade mútua, decidimos definir as seguintes funções:
+\begin{spec}
+f1 a b c n = f a b c (n+1)
+f2 a b c n = f a b c (n+2)
+\end{spec}
+O que nos leva a obter o seguinte:
+\begin{spec}
+f2 a b c 0 = 1
+f2 a b c (n+1) = a * (f2 a b c) n + b * (f1 a b c) n + c * f a b c n
 
-    (f1 a b c) 0 = 1
-    (f1 a b c) (n+1) = (f2 a b c) n
+f1 a b c 0 = 1
+f1 a b c (n+1) = (f2 a b c) n
 
-    (f a b c) 0 = 0
-    (f a b c) (n+1) = (f1 a b c) n
-}
+f a b c 0 = 0
+f a b c (n+1) = (f1 a b c) n
+\end{spec}
+Assim, conseguimos obter as seguintes funções mutuamente recursivas em Haskell:
 \begin{code}
-f2 0 = 1
-f2 n = (a * f2 (n-1)) + (b * f1 (n-1)) + (c * f' (n-1))
+f2 _ _ _ 0 = 1
+f2 x y z n = (x * f2 x y z (n-1)) + (y * f1 x y z (n-1)) + (z * fn x y z (n-1))
 
-f1 0 = 1
-f1 n = f2 (n-1)
+f1 _ _ _ 0 = 1
+f1 x y z n = f2 x y z (n-1)
 
-f' 0 = 0
-f' n = f1 (n-1)
+fn _ _ _ 0 = 0
+fn x y z n = f1 x y z (n-1)
 \end{code}
+Com estas funções |f1|, |f2| e |fn|, conseguimos usar a lei da recursividade mútua e formar 
+as seguintes funções auxiliares:
 
-Funções auxiliares pedidas:
 \begin{code}
-loop = undefined
-initial = undefined
+loop a b c ((f2,f1),fn) = ((a*f2 + b*f1 + c*fn, f2),f1)
+initial = ((1,1),0)
 wrap = p2
 \end{code}
 
 \subsection*{Problema 2}
 Gene de |tax|:
 \begin{code}
-gene = undefined
+gene [] = i1 ""
+gene l = ((id -|- id >< aux).out) l 
+    where
+        getLevel = (flip div 4).length.(takeWhile (==' ')) 
+        upLevel = map (drop 4) 
+        aux = anaList g 
+            where
+                g [] = i1()
+                g (h:t) = let (x,y) = span ((>1).getLevel) t in i2(upLevel (h:x), y)
 \end{code}
 Função de pós-processamento:
 \begin{code}
-post = undefined
+post (Var v) = [[v]]
+post (Term v []) = [[v]]
+post (Term x children) = [x]:concatMap (\y -> map (x:) (post y)) children
 \end{code}
 
 \subsection*{Problema 3}
 \begin{code}
 squares = anaRose gsq
 
-gsq = undefined
+gsq (((x, y), l),0) = let c = l/3 in (((x+c,y+c),c),[])
+gsq (((x, y), l),n) = (((x+c,y+c),c),nexts)
+    where
+        c = l/3
+        nexts = [(((x,y),c),n-1),
+                 (((x,y+c),c),n-1),
+                 (((x,y+2*c),c),n-1),
+                 (((x+c,y),c),n-1),
+                 (((x+c,y+2*c),c),n-1),
+                 (((x+2*c,y),c),n-1),
+                 (((x+2*c,y+c),c),n-1),
+                 (((x+2*c,y+2*c),c),n-1)]
 
 rose2List = cataRose gr2l 
 
-gr2l = undefined
+gr2l (sq,l) = sq:concat l
 
-carpets = undefined
+carpets n = [sierpinski (((0,0),32),i) | i <- [0..n-1]]
 
-present = undefined
+present [] = return []
+present (x:xs) = do{
+    drawSq x;
+    await;
+    present xs;
+}
 \end{code}
 
 \subsection*{Problema 4}
@@ -1184,9 +1211,19 @@ cgene = undefined
 \end{code}
 Geração dos jogos da fase de grupos:
 \begin{code}
-pairup = undefined
+pairup :: Group -> [Match]
+pairup [] = []
+pairup (h:t) = [(h,x) | x <- t] ++ pairup t
 
-matchResult = undefined
+matchResult :: (Match -> Maybe Team) -> Match -> [(Team,Int)]
+matchResult f m@(eq1,eq2) =  let res = f m; 
+								 eq1_pts = if res == Nothing then 1 
+								 		   else if res == Just eq1 then 3 
+										   else 0;
+								 eq2_pts = if res == Nothing then 1 
+								 		   else if res == Just eq2 then 3 
+										   else 0;
+							 in [(eq1,eq1_pts),(eq2,eq2_pts)]
 
 glt = undefined
 \end{code}

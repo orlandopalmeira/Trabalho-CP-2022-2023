@@ -1606,47 +1606,58 @@ Valoriza-se a escrita de \emph{pouco} código que corresponda a soluções
 simples e elegantes.
 
 \subsection*{Problema 1}
-Para podermos utilizar a lei da recursividade mútua de modo a converter a função \textit{f} 
-num ciclo \textit{for}, tivemos de definir as seguintes funções auxiliares para fazer uma mudança de variável. 
-\textit{
-    (f1 a b c) n = (f a b c) (n+1)
-    (f2 a b c) n = (f a b c) (n+2)
-}
-Logo,
-\textit{
-    (f2 a b c) 0 = 1
-    (f2 a b c) (n+1) = a * (f2 a b c) n + b * (f1 a b c) n + c * f a b c n
-
-    (f1 a b c) 0 = 1
-    (f1 a b c) (n+1) = (f2 a b c) n
-
-    (f a b c) 0 = 0
-    (f a b c) (n+1) = (f1 a b c) n
-}
+Para recorrer à lei da recursividade mútua, decidimos definir as seguintes funções:
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
-\>[B]{}\Varid{f2}\;\mathrm{0}\mathrel{=}\mathrm{1}{}\<[E]%
+\>[B]{}\Varid{f1}\;\Varid{a}\;\Varid{b}\;\Varid{c}\;\Varid{n}\mathrel{=}\Varid{f}\;\Varid{a}\;\Varid{b}\;\Varid{c}\;(\Varid{n}\mathbin{+}\mathrm{1}){}\<[E]%
 \\
-\>[B]{}\Varid{f2}\;\Varid{n}\mathrel{=}(\Varid{a}\mathbin{*}\Varid{f2}\;(\Varid{n}\mathbin{-}\mathrm{1}))\mathbin{+}(\Varid{b}\mathbin{*}\Varid{f1}\;(\Varid{n}\mathbin{-}\mathrm{1}))\mathbin{+}(\Varid{c}\mathbin{*}\Varid{f'}\;(\Varid{n}\mathbin{-}\mathrm{1})){}\<[E]%
-\\[\blanklineskip]%
-\>[B]{}\Varid{f1}\;\mathrm{0}\mathrel{=}\mathrm{1}{}\<[E]%
-\\
-\>[B]{}\Varid{f1}\;\Varid{n}\mathrel{=}\Varid{f2}\;(\Varid{n}\mathbin{-}\mathrm{1}){}\<[E]%
-\\[\blanklineskip]%
-\>[B]{}\Varid{f'}\;\mathrm{0}\mathrel{=}\mathrm{0}{}\<[E]%
-\\
-\>[B]{}\Varid{f'}\;\Varid{n}\mathrel{=}\Varid{f1}\;(\Varid{n}\mathbin{-}\mathrm{1}){}\<[E]%
+\>[B]{}\Varid{f2}\;\Varid{a}\;\Varid{b}\;\Varid{c}\;\Varid{n}\mathrel{=}\Varid{f}\;\Varid{a}\;\Varid{b}\;\Varid{c}\;(\Varid{n}\mathbin{+}\mathrm{2}){}\<[E]%
 \ColumnHook
 \end{hscode}\resethooks
-
-Funções auxiliares pedidas:
+O que nos leva a obter o seguinte:
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
-\>[B]{}\Varid{loop}\mathrel{=}\bot {}\<[E]%
+\>[B]{}\Varid{f2}\;\Varid{a}\;\Varid{b}\;\Varid{c}\;\mathrm{0}\mathrel{=}\mathrm{1}{}\<[E]%
 \\
-\>[B]{}\Varid{initial}\mathrel{=}\bot {}\<[E]%
+\>[B]{}\Varid{f2}\;\Varid{a}\;\Varid{b}\;\Varid{c}\;(\Varid{n}\mathbin{+}\mathrm{1})\mathrel{=}\Varid{a}\mathbin{*}(\Varid{f2}\;\Varid{a}\;\Varid{b}\;\Varid{c})\;\Varid{n}\mathbin{+}\Varid{b}\mathbin{*}(\Varid{f1}\;\Varid{a}\;\Varid{b}\;\Varid{c})\;\Varid{n}\mathbin{+}\Varid{c}\mathbin{*}\Varid{f}\;\Varid{a}\;\Varid{b}\;\Varid{c}\;\Varid{n}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{f1}\;\Varid{a}\;\Varid{b}\;\Varid{c}\;\mathrm{0}\mathrel{=}\mathrm{1}{}\<[E]%
+\\
+\>[B]{}\Varid{f1}\;\Varid{a}\;\Varid{b}\;\Varid{c}\;(\Varid{n}\mathbin{+}\mathrm{1})\mathrel{=}(\Varid{f2}\;\Varid{a}\;\Varid{b}\;\Varid{c})\;\Varid{n}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{f}\;\Varid{a}\;\Varid{b}\;\Varid{c}\;\mathrm{0}\mathrel{=}\mathrm{0}{}\<[E]%
+\\
+\>[B]{}\Varid{f}\;\Varid{a}\;\Varid{b}\;\Varid{c}\;(\Varid{n}\mathbin{+}\mathrm{1})\mathrel{=}(\Varid{f1}\;\Varid{a}\;\Varid{b}\;\Varid{c})\;\Varid{n}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+Assim, conseguimos obter as seguintes funções mutuamente recursivas em Haskell:
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{f2}\;\anonymous \;\anonymous \;\anonymous \;\mathrm{0}\mathrel{=}\mathrm{1}{}\<[E]%
+\\
+\>[B]{}\Varid{f2}\;\Varid{x}\;\Varid{y}\;\Varid{z}\;\Varid{n}\mathrel{=}(\Varid{x}\mathbin{*}\Varid{f2}\;\Varid{x}\;\Varid{y}\;\Varid{z}\;(\Varid{n}\mathbin{-}\mathrm{1}))\mathbin{+}(\Varid{y}\mathbin{*}\Varid{f1}\;\Varid{x}\;\Varid{y}\;\Varid{z}\;(\Varid{n}\mathbin{-}\mathrm{1}))\mathbin{+}(\Varid{z}\mathbin{*}\Varid{fn}\;\Varid{x}\;\Varid{y}\;\Varid{z}\;(\Varid{n}\mathbin{-}\mathrm{1})){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{f1}\;\anonymous \;\anonymous \;\anonymous \;\mathrm{0}\mathrel{=}\mathrm{1}{}\<[E]%
+\\
+\>[B]{}\Varid{f1}\;\Varid{x}\;\Varid{y}\;\Varid{z}\;\Varid{n}\mathrel{=}\Varid{f2}\;\Varid{x}\;\Varid{y}\;\Varid{z}\;(\Varid{n}\mathbin{-}\mathrm{1}){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{fn}\;\anonymous \;\anonymous \;\anonymous \;\mathrm{0}\mathrel{=}\mathrm{0}{}\<[E]%
+\\
+\>[B]{}\Varid{fn}\;\Varid{x}\;\Varid{y}\;\Varid{z}\;\Varid{n}\mathrel{=}\Varid{f1}\;\Varid{x}\;\Varid{y}\;\Varid{z}\;(\Varid{n}\mathbin{-}\mathrm{1}){}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+Com estas funções \ensuremath{\Varid{f1}}, \ensuremath{\Varid{f2}} e \ensuremath{\Varid{fn}}, conseguimos usar a lei da recursividade mútua e formar 
+as seguintes funções auxiliares:
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{loop}\;\Varid{a}\;\Varid{b}\;\Varid{c}\;((\Varid{f2},\Varid{f1}),\Varid{fn})\mathrel{=}((\Varid{a}\mathbin{*}\Varid{f2}\mathbin{+}\Varid{b}\mathbin{*}\Varid{f1}\mathbin{+}\Varid{c}\mathbin{*}\Varid{fn},\Varid{f2}),\Varid{f1}){}\<[E]%
+\\
+\>[B]{}\Varid{initial}\mathrel{=}((\mathrm{1},\mathrm{1}),\mathrm{0}){}\<[E]%
 \\
 \>[B]{}\Varid{wrap}\mathrel{=}\p2{}\<[E]%
 \ColumnHook
@@ -1656,33 +1667,112 @@ Funções auxiliares pedidas:
 Gene de \ensuremath{\Varid{tax}}:
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{9}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{13}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{17}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
-\>[B]{}\Varid{gene}\mathrel{=}\bot {}\<[E]%
+\>[B]{}\Varid{gene}\;[\mskip1.5mu \mskip1.5mu]\mathrel{=}i_1\;\text{\ttfamily \char34 \char34}{}\<[E]%
+\\
+\>[B]{}\Varid{gene}\;\Varid{l}\mathrel{=}((\Varid{id}+\Varid{id}\times\Varid{aux})\comp \Varid{out})\;\Varid{l}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\mathbf{where}{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{getLevel}\mathrel{=}(\Varid{flip}\;\cdot \div \cdot \;\mathrm{4})\comp \length \comp (\Varid{takeWhile}\;(\equiv \text{\ttfamily '~'})){}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{upLevel}\mathrel{=}\map \;(\Varid{drop}\;\mathrm{4}){}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{aux}\mathrel{=}\anaList{\Varid{g}}{}\<[E]%
+\\
+\>[9]{}\hsindent{4}{}\<[13]%
+\>[13]{}\mathbf{where}{}\<[E]%
+\\
+\>[13]{}\hsindent{4}{}\<[17]%
+\>[17]{}\Varid{g}\;[\mskip1.5mu \mskip1.5mu]\mathrel{=}i_1\;(){}\<[E]%
+\\
+\>[13]{}\hsindent{4}{}\<[17]%
+\>[17]{}\Varid{g}\;(\Varid{h}\mathbin{:}\Varid{t})\mathrel{=}\mathbf{let}\;(\Varid{x},\Varid{y})\mathrel{=}\Varid{span}\;((\mathbin{>}\mathrm{1})\comp \Varid{getLevel})\;\Varid{t}\;\mathbf{in}\;i_2\;(\Varid{upLevel}\;(\Varid{h}\mathbin{:}\Varid{x}),\Varid{y}){}\<[E]%
 \ColumnHook
 \end{hscode}\resethooks
 Função de pós-processamento:
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
-\>[B]{}\Varid{post}\mathrel{=}\bot {}\<[E]%
+\>[B]{}\Varid{post}\;(\Conid{Var}\;\Varid{v})\mathrel{=}[\mskip1.5mu [\mskip1.5mu \Varid{v}\mskip1.5mu]\mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{post}\;(\Conid{Term}\;\Varid{v}\;[\mskip1.5mu \mskip1.5mu])\mathrel{=}[\mskip1.5mu [\mskip1.5mu \Varid{v}\mskip1.5mu]\mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{post}\;(\Conid{Term}\;\Varid{x}\;\Varid{children})\mathrel{=}[\mskip1.5mu \Varid{x}\mskip1.5mu]\mathbin{:}\Varid{concatMap}\;(\lambda \Varid{y}\to \map \;(\Varid{x}\mathbin{:})\;(\Varid{post}\;\Varid{y}))\;\Varid{children}{}\<[E]%
 \ColumnHook
 \end{hscode}\resethooks
 
 \subsection*{Problema 3}
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{9}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{18}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
 \>[B]{}\Varid{squares}\mathrel{=}\lanabracket\;\!\Varid{gsq}\;\!\ranabracket_\textit{\tiny R}{}\<[E]%
 \\[\blanklineskip]%
-\>[B]{}\Varid{gsq}\mathrel{=}\bot {}\<[E]%
+\>[B]{}\Varid{gsq}\;(((\Varid{x},\Varid{y}),\Varid{l}),\mathrm{0})\mathrel{=}\mathbf{let}\;\Varid{c}\mathrel{=}\Varid{l}\mathbin{/}\mathrm{3}\;\mathbf{in}\;(((\Varid{x}\mathbin{+}\Varid{c},\Varid{y}\mathbin{+}\Varid{c}),\Varid{c}),[\mskip1.5mu \mskip1.5mu]){}\<[E]%
+\\
+\>[B]{}\Varid{gsq}\;(((\Varid{x},\Varid{y}),\Varid{l}),\Varid{n})\mathrel{=}(((\Varid{x}\mathbin{+}\Varid{c},\Varid{y}\mathbin{+}\Varid{c}),\Varid{c}),\Varid{nexts}){}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\mathbf{where}{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{c}\mathrel{=}\Varid{l}\mathbin{/}\mathrm{3}{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{nexts}\mathrel{=}[\mskip1.5mu (((\Varid{x},\Varid{y}),\Varid{c}),\Varid{n}\mathbin{-}\mathrm{1}),{}\<[E]%
+\\
+\>[9]{}\hsindent{9}{}\<[18]%
+\>[18]{}(((\Varid{x},\Varid{y}\mathbin{+}\Varid{c}),\Varid{c}),\Varid{n}\mathbin{-}\mathrm{1}),{}\<[E]%
+\\
+\>[9]{}\hsindent{9}{}\<[18]%
+\>[18]{}(((\Varid{x},\Varid{y}\mathbin{+}\mathrm{2}\mathbin{*}\Varid{c}),\Varid{c}),\Varid{n}\mathbin{-}\mathrm{1}),{}\<[E]%
+\\
+\>[9]{}\hsindent{9}{}\<[18]%
+\>[18]{}(((\Varid{x}\mathbin{+}\Varid{c},\Varid{y}),\Varid{c}),\Varid{n}\mathbin{-}\mathrm{1}),{}\<[E]%
+\\
+\>[9]{}\hsindent{9}{}\<[18]%
+\>[18]{}(((\Varid{x}\mathbin{+}\Varid{c},\Varid{y}\mathbin{+}\mathrm{2}\mathbin{*}\Varid{c}),\Varid{c}),\Varid{n}\mathbin{-}\mathrm{1}),{}\<[E]%
+\\
+\>[9]{}\hsindent{9}{}\<[18]%
+\>[18]{}(((\Varid{x}\mathbin{+}\mathrm{2}\mathbin{*}\Varid{c},\Varid{y}),\Varid{c}),\Varid{n}\mathbin{-}\mathrm{1}),{}\<[E]%
+\\
+\>[9]{}\hsindent{9}{}\<[18]%
+\>[18]{}(((\Varid{x}\mathbin{+}\mathrm{2}\mathbin{*}\Varid{c},\Varid{y}\mathbin{+}\Varid{c}),\Varid{c}),\Varid{n}\mathbin{-}\mathrm{1}),{}\<[E]%
+\\
+\>[9]{}\hsindent{9}{}\<[18]%
+\>[18]{}(((\Varid{x}\mathbin{+}\mathrm{2}\mathbin{*}\Varid{c},\Varid{y}\mathbin{+}\mathrm{2}\mathbin{*}\Varid{c}),\Varid{c}),\Varid{n}\mathbin{-}\mathrm{1})\mskip1.5mu]{}\<[E]%
 \\[\blanklineskip]%
 \>[B]{}\Varid{rose2List}\mathrel{=}\llparenthesis\, \Varid{gr2l}\,\rrparenthesis_\textit{\tiny R}{}\<[E]%
 \\[\blanklineskip]%
-\>[B]{}\Varid{gr2l}\mathrel{=}\bot {}\<[E]%
+\>[B]{}\Varid{gr2l}\;(\Varid{sq},\Varid{l})\mathrel{=}\Varid{sq}\mathbin{:}\Varid{concat}\;\Varid{l}{}\<[E]%
 \\[\blanklineskip]%
-\>[B]{}\Varid{carpets}\mathrel{=}\bot {}\<[E]%
+\>[B]{}\Varid{carpets}\;\Varid{n}\mathrel{=}[\mskip1.5mu \Varid{sierpinski}\;(((\mathrm{0},\mathrm{0}),\mathrm{32}),\Varid{i})\mid \Varid{i}\leftarrow [\mskip1.5mu \mathrm{0}\mathinner{\ldotp\ldotp}\Varid{n}\mathbin{-}\mathrm{1}\mskip1.5mu]\mskip1.5mu]{}\<[E]%
 \\[\blanklineskip]%
-\>[B]{}\Varid{present}\mathrel{=}\bot {}\<[E]%
+\>[B]{}\Varid{present}\;[\mskip1.5mu \mskip1.5mu]\mathrel{=}\Varid{return}\;[\mskip1.5mu \mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{present}\;(\Varid{x}\mathbin{:}\Varid{xs})\mathrel{=}\mathbf{do}\;\{\mskip1.5mu {}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{drawSq}\;\Varid{x};{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{await};{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{present}\;\Varid{xs};{}\<[E]%
+\\
+\>[B]{}\mskip1.5mu\}{}\<[E]%
 \ColumnHook
 \end{hscode}\resethooks
 

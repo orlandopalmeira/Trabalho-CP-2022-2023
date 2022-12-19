@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2022.12.19)  19 DEC 2022 16:09
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2022.12.19)  19 DEC 2022 20:30
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -55,58 +55,20 @@ Package: iftex 2020/03/06 v1.0d TeX engine tests
 Type X to quit or <RETURN> to proceed,
 or enter new name. (Default extension: sty)
 
-Enter file name: cp2223t
-(./cp2223t.sty (/usr/share/texlive/texmf-dist/tex/latex/base/fleqn.sty
-
-LaTeX Warning: inputting `fleqn.clo' instead of obsolete `fleqn.sty'.
-
-(/usr/share/texlive/texmf-dist/tex/latex/base/fleqn.clo
-File: fleqn.clo 2016/12/29 v1.2b Standard LaTeX option (flush left equations)
-\mathindent=\skip49
-Applying: [2015/01/01] Make \[ robust on input line 50.
-LaTeX Info: Redefining \[ on input line 51.
-Already applied: [0000/00/00] Make \[ robust on input line 62.
-Applying: [2015/01/01] Make \] robust on input line 74.
-LaTeX Info: Redefining \] on input line 75.
-Already applied: [0000/00/00] Make \] robust on input line 83.
-))
-(/usr/share/texlive/texmf-dist/tex/generic/babel/babel.sty
-Package: babel 2022/01/26 3.70 The Babel package
-\babel@savecnt=\count196
-\U@D=\dimen147
-\l@unhyphenated=\language7
-
-(/usr/share/texlive/texmf-dist/tex/generic/babel/txtbabel.def)
-\bbl@readstream=\read2
-\bbl@dirlevel=\count197
-
-
-! Package babel Error: Unknown option 'portuguese'. Either you misspelled it
-(babel)                or the language definition file portuguese.ldf was not f
-ound.
-
-See the babel package documentation for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.4254 \ProcessOptions*
-                       
-? 
+Enter file name: 
 ! Emergency stop.
- ...                                              
-                                                  
-l.4254 \ProcessOptions*
-                       
-Valid options are, among others: shorthands=, KeepShorthandsActive,
-activeacute, activegrave, noconfigs, safe=, main=, math=
-headfoot=, strings=, config=, hyphenmap=, or a language name.
+<read *> 
+         
+l.4 \usepackage
+               [colorlinks=true]{hyperref}^^M
+End of file on the terminal!
 
  
 Here is how much of TeX's memory you used:
- 1746 strings out of 480171
- 28813 string characters out of 5894488
- 333009 words of memory out of 5000000
- 19756 multiletter control sequences out of 15000+600000
+ 829 strings out of 480171
+ 12467 string characters out of 5894488
+ 303025 words of memory out of 5000000
+ 18857 multiletter control sequences out of 15000+600000
  469259 words of font info for 28 fonts, out of 8000000 for 9000
  59 hyphenation exceptions out of 8191
  55i,0n,62p,198b,36s stack positions out of 5000i,500n,10000p,200000b,80000s
