@@ -831,7 +831,7 @@ exemplo o cálculo do ciclo-\textsf{for} que implementa a função de Fibonacci,
 recordar o sistema:
 \begin{spec}
 fib 0 = 1
-fib(n+1) = f n
+fib(n+1) = f nb
 
 f 0 = 1
 f (n+1) = fib n + f n
@@ -1207,25 +1207,52 @@ present (x:xs) = do{
 \subsubsection*{Versão não probabilística}
 Gene de |consolidate'|:
 \begin{code}
-cgene = undefined
+cgene :: (Eq a, Num b) => Either () ((a,b),[(a,b)]) -> [(a,b)]
+cgene = either nil ((map soma).gr.cons)
+    where
+        gr [] = []
+        gr l@((t,_):_) = filter ((==t).p1) l : gr (filter ((/=t).p1) l)
+        soma l@((x,_):t) = (x,sum(map p2 l))
+
+{- A função 'gr' agrupa os pares (Equipa,pontos) em sublistas cujos pares (Equipa,pontos) têm a 
+   mesma equipa
+   Ela gera algo assim:
+   gr [("Qatar",1),("Ecuador",1),("Qatar",0),("Senegal",3),("Qatar",0),("Netherlands",3),("Ecuador",0),("Senegal",3),("Ecuador",0),("Netherlands",3),("Senegal",0),("Netherlands",3)] 
+   Resultado:
+   [[("Qatar",1),("Qatar",0),("Qatar",0)],
+    [("Ecuador",1),("Ecuador",0),("Ecuador",0)],
+    [("Senegal",3),("Senegal",3),("Senegal",0)],
+    [("Netherlands",3),("Netherlands",3),("Netherlands",3)]]
+
+   A função 'soma' pega numa lista de pares (Equipa,pontos) em que todos os pares têm a mesma 
+   Equipa (condição garantida pela gr) e devolve um par (Equipa,Pontos) em que Equipa é a Equipa que
+   estava nos pares da lista e Pontos é a soma de todos os pontos dessa equipa.
+   Ela gera algo assim:
+   soma [("Netherlands",3),("Netherlands",3),("Netherlands",3)]
+   Resultado: ("Netherlands",9)
+   
+-}
 \end{code}
 Geração dos jogos da fase de grupos:
 \begin{code}
-pairup :: Group -> [Match]
+pairup :: (Eq b) => [b] -> [(b,b)]
 pairup [] = []
 pairup (h:t) = [(h,x) | x <- t] ++ pairup t
 
 matchResult :: (Match -> Maybe Team) -> Match -> [(Team,Int)]
 matchResult f m@(eq1,eq2) =  let res = f m; 
-								 eq1_pts = if res == Nothing then 1 
-								 		   else if res == Just eq1 then 3 
-										   else 0;
-								 eq2_pts = if res == Nothing then 1 
-								 		   else if res == Just eq2 then 3 
-										   else 0;
-							 in [(eq1,eq1_pts),(eq2,eq2_pts)]
+                                 eq1_pts = if res == Nothing then 1 
+                                           else if res == Just eq1 then 3 
+                                           else 0;
+                                 eq2_pts = if res == Nothing then 1 
+                                           else if res == Just eq2 then 3 
+                                           else 0;
+                              in [(eq1,eq1_pts),(eq2,eq2_pts)]
 
-glt = undefined
+
+glt [x] = i1 x
+glt l = let len = div (length l) 2 
+        in i2 (splitAt len l)
 \end{code}
 \subsubsection*{Versão probabilística}
 \begin{code}
