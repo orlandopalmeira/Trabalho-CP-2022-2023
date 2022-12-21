@@ -1249,19 +1249,30 @@ matchResult f m@(eq1,eq2) =  let res = f m;
                                            else 0;
                               in [(eq1,eq1_pts),(eq2,eq2_pts)]
 
-
 glt [x] = i1 x
-glt l = let len = div (length l) 2 
-        in i2 (splitAt len l)
+glt l = let len = div (length l) 2 in i2 (splitAt len l)
 \end{code}
 \subsubsection*{Versão probabilística}
 \begin{code}
 pinitKnockoutStage = undefined
 
+-- groupWinners :: (Match -> Maybe Team) -> [Match] -> [Team]
+-- groupWinners criteria = best 2 . consolidate . (>>= matchResult criteria)
 pgroupWinners :: (Match -> Dist (Maybe Team)) -> [Match] -> Dist [Team]
 pgroupWinners = undefined
 
-pmatchResult = undefined
+-- matchResult :: (Match -> Maybe Team) -> Match -> [(Team,Int)]
+pmatchResult :: (Match -> Dist (Maybe Team)) -> Match -> Dist [(Team,Int)]
+pmatchResult f m@(e1,e2) = D (empate ++ e1_ ++ e2_)
+    where
+        criteria = (\(D x) -> x) (f m) -- é uma lista [(Maybe Team,Float)] que indica as probabilidades de cada equipa ganhar, perder ou empatar
+        maybe_prob_empate = List.lookup Nothing criteria -- vai buscar a probabilidade de empate (pode dar Nothing)
+        maybe_prob_e1 = List.lookup (Just e1) criteria -- vai buscar a probabilidade da equipa e1 ganhar (pode dar Nothing)
+        maybe_prob_e2 = List.lookup (Just e2) criteria -- vai buscar a probabilidade da equipa e2 ganhar (pode dar Nothing)
+        empate = if maybe_prob_empate == Nothing then [] else [([(e1,1),(e2,1)],(\(Just x) -> x) maybe_prob_empate)]
+        e1_ = if maybe_prob_e1 == Nothing then [] else [([(e1,3),(e2,0)],(\(Just x) -> x) maybe_prob_e1)]
+        e2_ = if maybe_prob_e2 == Nothing then [] else [([(e1,0),(e2,3)],(\(Just x) -> x) maybe_prob_e2)]
+
 \end{code}
 
 %----------------- Índice remissivo (exige makeindex) -------------------------%
