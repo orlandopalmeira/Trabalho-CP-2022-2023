@@ -1099,7 +1099,7 @@ recordar o sistema:
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
 \>[B]{}\Varid{fib}\;\mathrm{0}\mathrel{=}\mathrm{1}{}\<[E]%
 \\
-\>[B]{}\Varid{fib}\;(\Varid{n}\mathbin{+}\mathrm{1})\mathrel{=}\Varid{f}\;\Varid{n}{}\<[E]%
+\>[B]{}\Varid{fib}\;(\Varid{n}\mathbin{+}\mathrm{1})\mathrel{=}\Varid{f}\;\Varid{nb}{}\<[E]%
 \\[\blanklineskip]%
 \>[B]{}\Varid{f}\;\mathrm{0}\mathrel{=}\mathrm{1}{}\<[E]%
 \\
@@ -1650,7 +1650,7 @@ Assim, conseguimos obter as seguintes funções mutuamente recursivas em Haskell
 \ColumnHook
 \end{hscode}\resethooks
 Com estas funções \ensuremath{\Varid{f1}}, \ensuremath{\Varid{f2}} e \ensuremath{\Varid{fn}}, conseguimos usar a lei da recursividade mútua e formar 
-as seguintes funções auxiliares:
+as seguintes funções auxiliares através da regra prática presente no anexo \ref{sec:mr}:
 
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
@@ -1664,6 +1664,30 @@ as seguintes funções auxiliares:
 \end{hscode}\resethooks
 
 \subsection*{Problema 2}
+Função \ensuremath{\Varid{out}} utilizada na função \ensuremath{\Varid{gene}}:
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{out}\mathbin{::}[\mskip1.5mu \Conid{String}\mskip1.5mu]\to \Conid{String}+(\Conid{String},[\mskip1.5mu \Conid{String}\mskip1.5mu]){}\<[E]%
+\\
+\>[B]{}\Varid{out}\;[\mskip1.5mu \Varid{s}\mskip1.5mu]\mathrel{=}i_1\;\Varid{s}{}\<[E]%
+\\
+\>[B]{}\Varid{out}\;(\Varid{h}\mathbin{:}\Varid{t})\mathrel{=}i_2\;(\Varid{h},\Varid{t}){}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+A função \ensuremath{\Varid{gene}} irá gerar, no caso de uma lista não vazia, um par cujo primeiro elemento é a raíz
+da árvore e o segundo elemento serão todos os elementos que irão pertencer à arvore cuja raíz é o primeiro
+elemento do par.
+
+Para esta função, utilizámos três funções auxiliares: \ensuremath{\Varid{getLevel}}, \ensuremath{\Varid{upLevel}} e \ensuremath{\Varid{aux}}.
+A função \ensuremath{\Varid{getLevel}} conta o número de espaços no início de uma string e avalia em que nível da árvore essa
+string vai estar. Se tiver 0 espaços, retornará 0, se tiver 4 espaços, retornará 1, e assim por diante.
+A função \ensuremath{\Varid{upLevel}}, "sobe o nível" das strings de uma lista, isto é, serve para retirar os primeiros 4 
+espaços de todas as strings de uma lista de strings.
+A função \ensuremath{\Varid{aux}} (inspirada na função \ensuremath{\Varid{chunksOf}} da biblioteca List.hs), serve para transformar a cauda da 
+lista fornecida em várias listas que representam as subárvores.
+
 Gene de \ensuremath{\Varid{tax}}:
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
@@ -1672,9 +1696,11 @@ Gene de \ensuremath{\Varid{tax}}:
 \column{13}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{17}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{gene}\mathbin{::}[\mskip1.5mu \Conid{String}\mskip1.5mu]\to \Conid{String}+(\Conid{String},[\mskip1.5mu [\mskip1.5mu \Conid{String}\mskip1.5mu]\mskip1.5mu]){}\<[E]%
+\\
 \>[B]{}\Varid{gene}\;[\mskip1.5mu \mskip1.5mu]\mathrel{=}i_1\;\text{\ttfamily \char34 \char34}{}\<[E]%
 \\
-\>[B]{}\Varid{gene}\;\Varid{l}\mathrel{=}((\Varid{id}+\Varid{id}\times\Varid{aux})\comp \Varid{out})\;\Varid{l}{}\<[E]%
+\>[B]{}\Varid{gene}\;\Varid{l}\mathrel{=}((\Varid{id}+\Varid{id}\times\Varid{aux})\comp (\Varid{\Conid{Main}.out}))\;\Varid{l}{}\<[E]%
 \\
 \>[B]{}\hsindent{5}{}\<[5]%
 \>[5]{}\mathbf{where}{}\<[E]%
@@ -1698,6 +1724,15 @@ Gene de \ensuremath{\Varid{tax}}:
 \>[17]{}\Varid{g}\;(\Varid{h}\mathbin{:}\Varid{t})\mathrel{=}\mathbf{let}\;(\Varid{x},\Varid{y})\mathrel{=}\Varid{span}\;((\mathbin{>}\mathrm{1})\comp \Varid{getLevel})\;\Varid{t}\;\mathbf{in}\;i_2\;(\Varid{upLevel}\;(\Varid{h}\mathbin{:}\Varid{x}),\Varid{y}){}\<[E]%
 \ColumnHook
 \end{hscode}\resethooks
+
+A função post gera todos os caminhos possíveis na árvore.
+Para isso, nesta função, começámos por definir os casos base da função, ou seja, quando a árvore tem apenas 
+um elemento. Neste caso, basta retornar uma lista com uma lista singular do elemento da árvore.
+
+Para os restantes casos, gerámos o primeiro caminho, isto é, uma lista com a raíz da árvore e aplicamos a 
+função post recursivamente às subárvores da árvore fornecida, acrescentando a raíz da árvore para calcular
+os próximos caminhos a partir dela.
+
 Função de pós-processamento:
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
@@ -1711,14 +1746,22 @@ Função de pós-processamento:
 \end{hscode}\resethooks
 
 \subsection*{Problema 3}
+Função \ensuremath{\Varid{squares}}:
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{squares}\mathrel{=}\lanabracket\;\!\Varid{gsq}\;\!\ranabracket_\textit{\tiny R}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+A função \ensuremath{\Varid{gsq}} é muito simples. Ela gera a raíz da árvore, ou seja, o quadrado central e gera os quadrados 
+adjacentes ao quadrado central. O cálculo da coordenada do canto inferior esquerdo dos quadrados foi
+baseada no esquema da figura \ref{fig:sierp2}.
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{5}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{9}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{18}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
-\>[B]{}\Varid{squares}\mathrel{=}\lanabracket\;\!\Varid{gsq}\;\!\ranabracket_\textit{\tiny R}{}\<[E]%
-\\[\blanklineskip]%
 \>[B]{}\Varid{gsq}\;(((\Varid{x},\Varid{y}),\Varid{l}),\mathrm{0})\mathrel{=}\mathbf{let}\;\Varid{c}\mathrel{=}\Varid{l}\mathbin{/}\mathrm{3}\;\mathbf{in}\;(((\Varid{x}\mathbin{+}\Varid{c},\Varid{y}\mathbin{+}\Varid{c}),\Varid{c}),[\mskip1.5mu \mskip1.5mu]){}\<[E]%
 \\
 \>[B]{}\Varid{gsq}\;(((\Varid{x},\Varid{y}),\Varid{l}),\Varid{n})\mathrel{=}(((\Varid{x}\mathbin{+}\Varid{c},\Varid{y}\mathbin{+}\Varid{c}),\Varid{c}),\Varid{nexts}){}\<[E]%
@@ -1754,11 +1797,27 @@ Função de pós-processamento:
 \>[18]{}(((\Varid{x}\mathbin{+}\mathrm{2}\mathbin{*}\Varid{c},\Varid{y}\mathbin{+}\mathrm{2}\mathbin{*}\Varid{c}),\Varid{c}),\Varid{n}\mathbin{-}\mathrm{1})\mskip1.5mu]{}\<[E]%
 \\[\blanklineskip]%
 \>[B]{}\Varid{rose2List}\mathrel{=}\llparenthesis\, \Varid{gr2l}\,\rrparenthesis_\textit{\tiny R}{}\<[E]%
-\\[\blanklineskip]%
+\\
 \>[B]{}\Varid{gr2l}\;(\Varid{sq},\Varid{l})\mathrel{=}\Varid{sq}\mathbin{:}\Varid{concat}\;\Varid{l}{}\<[E]%
-\\[\blanklineskip]%
+\ColumnHook
+\end{hscode}\resethooks
+A função \ensuremath{\Varid{carpets}} gera uma lista de listas de quadrados em que cada lista contém os quadrados do nível
+\ensuremath{\mathrm{0}} até ao nível \ensuremath{\Varid{n}\mathbin{-}\mathrm{1}}. Cada lista é gerada a partir da função \ensuremath{\Varid{sierpinski}} que recebe um 
+quadrado com coordenadas \ensuremath{(\mathrm{0},\mathrm{0})} e lado 32.
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
 \>[B]{}\Varid{carpets}\;\Varid{n}\mathrel{=}[\mskip1.5mu \Varid{sierpinski}\;(((\mathrm{0},\mathrm{0}),\mathrm{32}),\Varid{i})\mid \Varid{i}\leftarrow [\mskip1.5mu \mathrm{0}\mathinner{\ldotp\ldotp}\Varid{n}\mathbin{-}\mathrm{1}\mskip1.5mu]\mskip1.5mu]{}\<[E]%
-\\[\blanklineskip]%
+\ColumnHook
+\end{hscode}\resethooks
+A função \ensuremath{\Varid{present}} é muito simples. Ela recebe várias listas de quadrados, em que cada lista 
+tem os quadrados de um certo nível da RoseTree e imprime esses quadrados através da função \ensuremath{\Varid{drawSq}}.
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{present}\mathbin{::}[\mskip1.5mu [\mskip1.5mu \Conid{Square}\mskip1.5mu]\mskip1.5mu]\to \fun{IO}\;[\mskip1.5mu ()\mskip1.5mu]{}\<[E]%
+\\
 \>[B]{}\Varid{present}\;[\mskip1.5mu \mskip1.5mu]\mathrel{=}\Varid{return}\;[\mskip1.5mu \mskip1.5mu]{}\<[E]%
 \\
 \>[B]{}\Varid{present}\;(\Varid{x}\mathbin{:}\Varid{xs})\mathrel{=}\mathbf{do}\;\{\mskip1.5mu {}\<[E]%
@@ -1778,35 +1837,169 @@ Função de pós-processamento:
 
 \subsection*{Problema 4}
 \subsubsection*{Versão não probabilística}
+A função \ensuremath{\Varid{cgene}}, no caso em que recebe um par \ensuremath{((\Conid{Team},\Conid{Int}),[\mskip1.5mu (\Conid{Team},\Conid{Int})\mskip1.5mu])} (em que Int representa os pontos
+da equipa). A função começa por reconstruir a lista adicionando o par \ensuremath{(\Conid{Team},\Conid{Int})} à lista do segundo 
+elemento do par. Como é através desta lista que vamos saber o total de pontos de cada equipa, então 
+precisamos de agrupar os diversos pares de cada equipa. Para isso usámos uma função auxiliar designada
+\ensuremath{\Varid{gr}}. Após agrupar os diversos pares pela respetiva equipa, somámos os pontos para obter a pontuação
+total da equipa. Para isso utilizámos a função \ensuremath{\Varid{soma}}.
+
 Gene de \ensuremath{\Varid{consolidate'}}:
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{9}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
-\>[B]{}\Varid{cgene}\mathrel{=}\bot {}\<[E]%
+\>[B]{}\Varid{cgene}\mathbin{::}(\Conid{Eq}\;\Varid{a},\Conid{Num}\;\Varid{b})\Rightarrow ()+((\Varid{a},\Varid{b}),[\mskip1.5mu (\Varid{a},\Varid{b})\mskip1.5mu])\to [\mskip1.5mu (\Varid{a},\Varid{b})\mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{cgene}\mathrel{=}\alt{\Varid{nil}}{(\map \;\Varid{soma})\comp \Varid{gr}\comp \Varid{cons}}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\mathbf{where}{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{gr}\;[\mskip1.5mu \mskip1.5mu]\mathrel{=}[\mskip1.5mu \mskip1.5mu]{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{gr}\;\Varid{l}\mathord{@}((\Varid{t},\anonymous )\mathbin{:\char95 })\mathrel{=}\Varid{filter}\;((\equiv \Varid{t})\comp \p1)\;\Varid{l}\mathbin{:}\Varid{gr}\;(\Varid{filter}\;((\not\equiv \Varid{t})\comp \p1)\;\Varid{l}){}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{soma}\;\Varid{l}\mathord{@}((\Varid{x},\anonymous )\mathbin{:}\Varid{t})\mathrel{=}(\Varid{x},\Varid{sum}\;(\map \;\p2\;\Varid{l})){}\<[E]%
 \ColumnHook
 \end{hscode}\resethooks
-Geração dos jogos da fase de grupos:
+A função \ensuremath{\Varid{pairup}} irá gerar todos os jogos da fase de grupos de um certo grupo.
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
-\>[B]{}\Varid{pairup}\mathrel{=}\bot {}\<[E]%
-\\[\blanklineskip]%
-\>[B]{}\Varid{matchResult}\mathrel{=}\bot {}\<[E]%
-\\[\blanklineskip]%
-\>[B]{}\Varid{glt}\mathrel{=}\bot {}\<[E]%
+\>[B]{}\Varid{pairup}\mathbin{::}(\Conid{Eq}\;\Varid{b})\Rightarrow [\mskip1.5mu \Varid{b}\mskip1.5mu]\to [\mskip1.5mu (\Varid{b},\Varid{b})\mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{pairup}\;[\mskip1.5mu \mskip1.5mu]\mathrel{=}[\mskip1.5mu \mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{pairup}\;(\Varid{h}\mathbin{:}\Varid{t})\mathrel{=}[\mskip1.5mu (\Varid{h},\Varid{x})\mid \Varid{x}\leftarrow \Varid{t}\mskip1.5mu]\mathbin{+\!\!\!+}\Varid{pairup}\;\Varid{t}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+A função \ensuremath{\Varid{matchResult}} utiliza uma função de critério para avaliar o resultado de um certo jogo.
+A função de critério devolve o nome da equipa vencedora ou \ensuremath{\Conid{Nothing}} em caso de empate. Assim,
+com o resultado da função de critério, a \ensuremath{\Varid{matchResult}} devolverá sempre uma lista com dois pares
+em que o primeiro elemento é o nome da equipa e o segundo é a sua pontuação que indica vitória, derrota 
+ou empate. Em caso de empate, ambas as equipas tem 1 ponto. Caso contrário, a equipa vencedora tem 3 pontos
+e a perdedora 0 pontos.
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{30}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{31}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{34}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{44}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{matchResult}\mathbin{::}(\Conid{Match}\to \Conid{Maybe}\;\Conid{Team})\to \Conid{Match}\to [\mskip1.5mu (\Conid{Team},\Conid{Int})\mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{matchResult}\;\Varid{f}\;\Varid{m}\mathord{@}(\Varid{eq1},\Varid{eq2})\mathrel{=}{}\<[30]%
+\>[30]{}\mathbf{let}\;\Varid{res}\mathrel{=}\Varid{f}\;\Varid{m};{}\<[E]%
+\\
+\>[30]{}\hsindent{4}{}\<[34]%
+\>[34]{}\Varid{eq1\char95 pts}\mathrel{=}\mathbf{if}\;\Varid{res}\equiv \Conid{Nothing}\;\mathbf{then}\;\mathrm{1}{}\<[E]%
+\\
+\>[34]{}\hsindent{10}{}\<[44]%
+\>[44]{}\mathbf{else}\;\mathbf{if}\;\Varid{res}\equiv \Conid{Just}\;\Varid{eq1}\;\mathbf{then}\;\mathrm{3}{}\<[E]%
+\\
+\>[34]{}\hsindent{10}{}\<[44]%
+\>[44]{}\mathbf{else}\;\mathrm{0};{}\<[E]%
+\\
+\>[30]{}\hsindent{4}{}\<[34]%
+\>[34]{}\Varid{eq2\char95 pts}\mathrel{=}\mathbf{if}\;\Varid{res}\equiv \Conid{Nothing}\;\mathbf{then}\;\mathrm{1}{}\<[E]%
+\\
+\>[34]{}\hsindent{10}{}\<[44]%
+\>[44]{}\mathbf{else}\;\mathbf{if}\;\Varid{res}\equiv \Conid{Just}\;\Varid{eq2}\;\mathbf{then}\;\mathrm{3}{}\<[E]%
+\\
+\>[34]{}\hsindent{10}{}\<[44]%
+\>[44]{}\mathbf{else}\;\mathrm{0};{}\<[E]%
+\\
+\>[30]{}\hsindent{1}{}\<[31]%
+\>[31]{}\mathbf{in}\;[\mskip1.5mu (\Varid{eq1},\Varid{eq1\char95 pts}),(\Varid{eq2},\Varid{eq2\char95 pts})\mskip1.5mu]{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+A função \ensuremath{\Varid{glt}} serve para a construção da LTree. Assim, caso receba uma lista singular, apenas retorna o
+elemento dessa lista. Caso contrário, parte a lista em duas metades para estas serem tratadas recursivamente.
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{glt}\;[\mskip1.5mu \Varid{x}\mskip1.5mu]\mathrel{=}i_1\;\Varid{x}{}\<[E]%
+\\
+\>[B]{}\Varid{glt}\;\Varid{l}\mathrel{=}\mathbf{let}\;\Varid{len}\mathrel{=}\length \;\Varid{l}\div \mathrm{2}\;\mathbf{in}\;i_2\;(\Varid{splitAt}\;\Varid{len}\;\Varid{l}){}\<[E]%
 \ColumnHook
 \end{hscode}\resethooks
 \subsubsection*{Versão probabilística}
+A função \ensuremath{\Varid{pinitKnockoutStage}} é muito simples. Ela apenas usa a função \ensuremath{\Varid{initKnockoutStage}} da versão não
+probabilística para gerar a LTree e coloca essa árvore no monad Dist.
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
-\>[B]{}\Varid{pinitKnockoutStage}\mathrel{=}\bot {}\<[E]%
-\\[\blanklineskip]%
+\>[B]{}\Varid{pinitKnockoutStage}\mathbin{::}[\mskip1.5mu [\mskip1.5mu \Conid{Team}\mskip1.5mu]\mskip1.5mu]\to \fun{Dist}\;({\LTree}\;\Conid{Team}){}\<[E]%
+\\
+\>[B]{}\Varid{pinitKnockoutStage}\mathrel{=}\Varid{return}\comp \Varid{initKnockoutStage}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+Na função \ensuremath{\Varid{pgroupWinners}}, começámos por gerar todas as combinações de resultados de jogos em 
+que gerámos todas as situações possíveis de vitórias, derrotas e empates com as respetivas probabilidades 
+dessas situações ocorrerem. Posteriormente, retirámos esse resultado do monad Dist e aplicamos o 
+tratamento \ensuremath{(\Varid{best}\;\mathrm{2})\comp \Varid{consolidate}} (como na \ensuremath{\Varid{groupWinners}} da versão não probabilística). Depois, 
+recolocámos o resultado no monad Dist para obter o resultado pretendido. 
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{9}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
 \>[B]{}\Varid{pgroupWinners}\mathbin{::}(\Conid{Match}\to \fun{Dist}\;(\Conid{Maybe}\;\Conid{Team}))\to [\mskip1.5mu \Conid{Match}\mskip1.5mu]\to \fun{Dist}\;[\mskip1.5mu \Conid{Team}\mskip1.5mu]{}\<[E]%
 \\
-\>[B]{}\Varid{pgroupWinners}\mathrel{=}\bot {}\<[E]%
-\\[\blanklineskip]%
-\>[B]{}\Varid{pmatchResult}\mathrel{=}\bot {}\<[E]%
+\>[B]{}\Varid{pgroupWinners}\;\Varid{crit}\;\Varid{m}\mathrel{=}\Conid{D}\mathbin{\$}\map \;(((\Varid{best}\;\mathrm{2})\comp \Varid{consolidate}\comp \Varid{concat})\times\Varid{id})\;\Varid{no\char95 monad\char95 combs}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\mathbf{where}{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{aux}\mathrel{=}\map \;(\Varid{pmatchResult}\;\Varid{crit})\;\Varid{m};{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{combs}\mathrel{=}\Varid{sequence}\;\Varid{aux};{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{no\char95 monad\char95 combs}\mathrel{=}(\lambda (\Conid{D}\;\Varid{k})\to \Varid{k})\;\Varid{combs}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+A função \ensuremath{\Varid{pmatchResult}} calcula as possbilidades do resultado de um jogo, isto é, retorna as probabilidades
+de, num jogo, uma equipa ganhar, perder ou empatar (se for o caso).
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{9}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{pmatchResult}\mathbin{::}(\Conid{Match}\to \fun{Dist}\;(\Conid{Maybe}\;\Conid{Team}))\to \Conid{Match}\to \fun{Dist}\;[\mskip1.5mu (\Conid{Team},\Conid{Int})\mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{pmatchResult}\;\Varid{f}\;\Varid{m}\mathord{@}(e_1 ,e_2 )\mathrel{=}\Conid{D}\;(\Varid{empate}\mathbin{+\!\!\!+}\Varid{e1\char95 }\mathbin{+\!\!\!+}\Varid{e2\char95 }){}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\mathbf{where}{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{criteria}\mathrel{=}(\lambda (\Conid{D}\;\Varid{x})\to \Varid{x})\;(\Varid{f}\;\Varid{m}){}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{maybe\char95 prob\char95 empate}\mathrel{=}\Varid{\Conid{List}.lookup}\;\Conid{Nothing}\;\Varid{criteria}{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{maybe\char95 prob\char95 e1}\mathrel{=}\Varid{\Conid{List}.lookup}\;(\Conid{Just}\;e_1 )\;\Varid{criteria}{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{maybe\char95 prob\char95 e2}\mathrel{=}\Varid{\Conid{List}.lookup}\;(\Conid{Just}\;e_2 )\;\Varid{criteria}{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{empate}\mathrel{=}\mathbf{if}\;\Varid{maybe\char95 prob\char95 empate}\equiv \Conid{Nothing}\;\mathbf{then}\;[\mskip1.5mu \mskip1.5mu]\;\mathbf{else}\;[\mskip1.5mu ([\mskip1.5mu (e_1 ,\mathrm{1}),(e_2 ,\mathrm{1})\mskip1.5mu],(\lambda (\Conid{Just}\;\Varid{x})\to \Varid{x})\;\Varid{maybe\char95 prob\char95 empate})\mskip1.5mu]{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{e1\char95 }\mathrel{=}\mathbf{if}\;\Varid{maybe\char95 prob\char95 e1}\equiv \Conid{Nothing}\;\mathbf{then}\;[\mskip1.5mu \mskip1.5mu]\;\mathbf{else}\;[\mskip1.5mu ([\mskip1.5mu (e_1 ,\mathrm{3}),(e_2 ,\mathrm{0})\mskip1.5mu],(\lambda (\Conid{Just}\;\Varid{x})\to \Varid{x})\;\Varid{maybe\char95 prob\char95 e1})\mskip1.5mu]{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{e2\char95 }\mathrel{=}\mathbf{if}\;\Varid{maybe\char95 prob\char95 e2}\equiv \Conid{Nothing}\;\mathbf{then}\;[\mskip1.5mu \mskip1.5mu]\;\mathbf{else}\;[\mskip1.5mu ([\mskip1.5mu (e_1 ,\mathrm{0}),(e_2 ,\mathrm{3})\mskip1.5mu],(\lambda (\Conid{Just}\;\Varid{x})\to \Varid{x})\;\Varid{maybe\char95 prob\char95 e2})\mskip1.5mu]{}\<[E]%
 \ColumnHook
 \end{hscode}\resethooks
 
