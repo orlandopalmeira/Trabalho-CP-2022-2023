@@ -1254,12 +1254,17 @@ glt l = let len = div (length l) 2 in i2 (splitAt len l)
 \end{code}
 \subsubsection*{Versão probabilística}
 \begin{code}
-pinitKnockoutStage = undefined
 
--- groupWinners :: (Match -> Maybe Team) -> [Match] -> [Team]
--- groupWinners criteria = best 2 . consolidate . (>>= matchResult criteria)
+pinitKnockoutStage :: [[Team]] -> Dist (LTree Team)
+pinitKnockoutStage = return . initKnockoutStage -- é só aplicar a initKnockOutStage e retornar o seu resultado num monad Dist
+
 pgroupWinners :: (Match -> Dist (Maybe Team)) -> [Match] -> Dist [Team]
-pgroupWinners = undefined
+pgroupWinners crit m = D $ map (((best 2).consolidate.concat) >< id) no_monad_combs -- pega na lista pares do no_monad_combs e concatena as listas de listas de (Team,Int) em cada um dos pares. Depois calcula calcula o resultado (best 2).consolidate em cada uma das listas de (Team,Int) do par para calcular as duas melhores equipas.
+    where
+        aux = map (pmatchResult crit) m; -- aplica a pmatchResult à m, ou seja, devolve todos os jogos da fase de grupos de um grupo com todas as situações possiveis de vitórias, derrotas ou empates, aux :: [Dist [(Team, Int)]]
+        combs = sequence aux; -- gera todas as combinações de jogos possíveis com vitórias, derrotas e empates, combs :: Dist [[(Team, Int)]]
+        no_monad_combs = (\(D k) -> k) combs -- tranforma o combs numa lista não monádica de pares do tipo [([[(Team, Int)]], Float)] 
+
 
 -- matchResult :: (Match -> Maybe Team) -> Match -> [(Team,Int)]
 pmatchResult :: (Match -> Dist (Maybe Team)) -> Match -> Dist [(Team,Int)]
