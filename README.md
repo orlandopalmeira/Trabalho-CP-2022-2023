@@ -17,4 +17,4 @@
 </div>
 
 <h3><i>Keywords</i></h3>
-CP, calculo de programas, uminho, miei, lei, lcc, engenharia informatica
+CP, Cálculo de Programas, calculo de programas, uminho, miei, lei, lcc, engenharia informatica
