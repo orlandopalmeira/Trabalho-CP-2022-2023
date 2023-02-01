@@ -159,15 +159,15 @@
 
 \begin{center}\large
 \begin{tabular}{ll}
-Grupo nr. & 99 (preencher)
+Grupo nr. & 09
 \\\hline
-a11111 & Nome1 (preencher)
+a97284 & Ana Rita Santos Poças
 \\
-a22222 & Nome2 (preencher)
+a96106 & Miguel Silva Pinto
 \\
-a33333 & Nome3 (preencher)
+a97755 & Orlando José da Cunha Palmeira
 \\
-a44444 & Nome4 (preencher, se aplicável)
+a97613 & Pedro Miguel Castilho Martins
 \end{tabular}
 \end{center}
 
@@ -207,7 +207,7 @@ import LTree
 import Rose hiding (g)
 import Probability
 import Data.List hiding (find)
-import Data.List.Split hiding (split,chunksOf) 
+--import Data.List.Split hiding (split,chunksOf) 
 import Svg hiding (for,wrap)
 import Control.Concurrent
 import Cp2223data
@@ -831,7 +831,7 @@ exemplo o cálculo do ciclo-\textsf{for} que implementa a função de Fibonacci,
 recordar o sistema:
 \begin{spec}
 fib 0 = 1
-fib(n+1) = f n
+fib(n+1) = f nb
 
 f 0 = 1
 f (n+1) = fib n + f n
@@ -1116,60 +1116,217 @@ Valoriza-se a escrita de \emph{pouco} código que corresponda a soluções
 simples e elegantes.
 
 \subsection*{Problema 1}
-Funções auxiliares pedidas:
+Para recorrer à lei da recursividade mútua, decidimos definir as seguintes funções:
+\begin{spec}
+f1 a b c n = f a b c (n+1)
+f2 a b c n = f a b c (n+2)
+\end{spec}
+O que nos leva a obter o seguinte:
+\begin{spec}
+f2 a b c 0 = 1
+f2 a b c (n+1) = a * (f2 a b c) n + b * (f1 a b c) n + c * f a b c n
+
+f1 a b c 0 = 1
+f1 a b c (n+1) = (f2 a b c) n
+
+f a b c 0 = 0
+f a b c (n+1) = (f1 a b c) n
+\end{spec}
+Assim, conseguimos obter as seguintes funções mutuamente recursivas em Haskell:
 \begin{code}
-loop = undefined
-initial = undefined
+f2 _ _ _ 0 = 1
+f2 x y z n = (x * f2 x y z (n-1)) + (y * f1 x y z (n-1)) + (z * fn x y z (n-1))
+
+f1 _ _ _ 0 = 1
+f1 x y z n = f2 x y z (n-1)
+
+fn _ _ _ 0 = 0
+fn x y z n = f1 x y z (n-1)
+\end{code}
+Com estas funções |f1|, |f2| e |fn|, conseguimos usar a lei da recursividade mútua e formar 
+as seguintes funções auxiliares através da regra prática presente no anexo \ref{sec:mr}:
+
+\begin{code}
+loop a b c ((f2,f1),fn) = ((a*f2 + b*f1 + c*fn, f2),f1)
+initial = ((1,1),0)
 wrap = p2
 \end{code}
 
 \subsection*{Problema 2}
+Função |out| utilizada na função |gene|:
+\begin{code}
+out :: [String] -> Either String (String,[String])
+out [s] = i1 s
+out (h:t) = i2 (h,t)
+\end{code}
+
+A função |gene| irá gerar, no caso de uma lista não vazia, um par cujo primeiro elemento é a raíz
+da árvore e o segundo elemento serão todos os elementos que irão pertencer à arvore cuja raíz é o primeiro
+elemento do par.
+
+Para esta função, utilizámos três funções auxiliares: |getLevel|, |upLevel| e |aux|.
+A função |getLevel| conta o número de espaços no início de uma string e avalia em que nível da árvore essa
+string vai estar. Se tiver 0 espaços, retornará 0, se tiver 4 espaços, retornará 1, e assim por diante.
+A função |upLevel|, "sobe o nível" das strings de uma lista, isto é, serve para retirar os primeiros 4 
+espaços de todas as strings de uma lista de strings.
+A função |aux| (inspirada na função |chunksOf| da biblioteca List.hs), serve para transformar a cauda da 
+lista fornecida em várias listas que representam as subárvores.
+
 Gene de |tax|:
 \begin{code}
-gene = undefined
+gene :: [String] -> Either String (String, [[String]])
+gene [] = i1 ""
+gene l = ((id -|- id >< aux).(Main.out)) l 
+    where
+        getLevel = (flip div 4).length.(takeWhile (==' ')) 
+        upLevel = map (drop 4) 
+        aux = anaList g 
+            where
+                g [] = i1()
+                g (h:t) = let (x,y) = span ((>1).getLevel) t in i2(upLevel (h:x), y)
 \end{code}
+
+A função post gera todos os caminhos possíveis na árvore.
+Para isso, nesta função, começámos por definir os casos base da função, ou seja, quando a árvore tem apenas 
+um elemento. Neste caso, basta retornar uma lista com uma lista singular do elemento da árvore.
+
+Para os restantes casos, gerámos o primeiro caminho, isto é, uma lista com a raíz da árvore e aplicamos a 
+função post recursivamente às subárvores da árvore fornecida, acrescentando a raíz da árvore para calcular
+os próximos caminhos a partir dela.
+
 Função de pós-processamento:
 \begin{code}
-post = undefined
+post (Var v) = [[v]]
+post (Term v []) = [[v]]
+post (Term x children) = [x]:concatMap (\y -> map (x:) (post y)) children
 \end{code}
 
 \subsection*{Problema 3}
+Função |squares|:
 \begin{code}
 squares = anaRose gsq
-
-gsq = undefined
+\end{code}
+A função |gsq| é muito simples. Ela gera a raíz da árvore, ou seja, o quadrado central e gera os quadrados 
+adjacentes ao quadrado central. O cálculo da coordenada do canto inferior esquerdo dos quadrados foi
+baseada no esquema da figura \ref{fig:sierp2}.
+\begin{code}
+gsq (((x, y), l),0) = let c = l/3 in (((x+c,y+c),c),[])
+gsq (((x, y), l),n) = (((x+c,y+c),c),nexts)
+    where
+        c = l/3
+        nexts = [(((x,y),c),n-1),
+                 (((x,y+c),c),n-1),
+                 (((x,y+2*c),c),n-1),
+                 (((x+c,y),c),n-1),
+                 (((x+c,y+2*c),c),n-1),
+                 (((x+2*c,y),c),n-1),
+                 (((x+2*c,y+c),c),n-1),
+                 (((x+2*c,y+2*c),c),n-1)]
 
 rose2List = cataRose gr2l 
-
-gr2l = undefined
-
-carpets = undefined
-
-present = undefined
+gr2l (sq,l) = sq:concat l
+\end{code}
+A função |carpets| gera uma lista de listas de quadrados em que cada lista contém os quadrados do nível
+|0| até ao nível |n-1|. Cada lista é gerada a partir da função |sierpinski| que recebe um 
+quadrado com coordenadas |(0,0)| e lado 32.
+\begin{code}
+carpets n = [sierpinski (((0,0),32),i) | i <- [0..n-1]]
+\end{code}
+A função |present| é muito simples. Ela recebe várias listas de quadrados, em que cada lista 
+tem os quadrados de um certo nível da RoseTree e imprime esses quadrados através da função |drawSq|.
+\begin{code}
+present :: [[Square]] -> IO [()]
+present [] = return []
+present (x:xs) = do{
+    drawSq x;
+    await;
+    present xs;
+}
 \end{code}
 
 \subsection*{Problema 4}
 \subsubsection*{Versão não probabilística}
+A função |cgene|, no caso em que recebe um par |((Team,Int),[(Team,Int)])| (em que Int representa os pontos
+da equipa). A função começa por reconstruir a lista adicionando o par |(Team,Int)| à lista do segundo 
+elemento do par. Como é através desta lista que vamos saber o total de pontos de cada equipa, então 
+precisamos de agrupar os diversos pares de cada equipa. Para isso usámos uma função auxiliar designada
+|gr|. Após agrupar os diversos pares pela respetiva equipa, somámos os pontos para obter a pontuação
+total da equipa. Para isso utilizámos a função |soma|.
+
 Gene de |consolidate'|:
 \begin{code}
-cgene = undefined
+cgene :: (Eq a, Num b) => Either () ((a,b),[(a,b)]) -> [(a,b)]
+cgene = either nil ((map soma).gr.cons)
+    where
+        gr [] = []
+        gr l@((t,_):_) = filter ((==t).p1) l : gr (filter ((/=t).p1) l)
+        soma l@((x,_):t) = (x,sum(map p2 l))
+
 \end{code}
-Geração dos jogos da fase de grupos:
+A função |pairup| irá gerar todos os jogos da fase de grupos de um certo grupo.
 \begin{code}
-pairup = undefined
-
-matchResult = undefined
-
-glt = undefined
+pairup :: (Eq b) => [b] -> [(b,b)]
+pairup [] = []
+pairup (h:t) = [(h,x) | x <- t] ++ pairup t
+\end{code}
+A função |matchResult| utiliza uma função de critério para avaliar o resultado de um certo jogo.
+A função de critério devolve o nome da equipa vencedora ou |Nothing| em caso de empate. Assim,
+com o resultado da função de critério, a |matchResult| devolverá sempre uma lista com dois pares
+em que o primeiro elemento é o nome da equipa e o segundo é a sua pontuação que indica vitória, derrota 
+ou empate. Em caso de empate, ambas as equipas tem 1 ponto. Caso contrário, a equipa vencedora tem 3 pontos
+e a perdedora 0 pontos.
+\begin{code}
+matchResult :: (Match -> Maybe Team) -> Match -> [(Team,Int)]
+matchResult f m@(eq1,eq2) =  let res = f m; 
+                                 eq1_pts = if res == Nothing then 1 
+                                           else if res == Just eq1 then 3 
+                                           else 0;
+                                 eq2_pts = if res == Nothing then 1 
+                                           else if res == Just eq2 then 3 
+                                           else 0;
+                              in [(eq1,eq1_pts),(eq2,eq2_pts)]
+\end{code}
+A função |glt| serve para a construção da LTree. Assim, caso receba uma lista singular, apenas retorna o
+elemento dessa lista. Caso contrário, parte a lista em duas metades para estas serem tratadas recursivamente.
+\begin{code}                              
+glt [x] = i1 x
+glt l = let len = div (length l) 2 in i2 (splitAt len l)
 \end{code}
 \subsubsection*{Versão probabilística}
+A função |pinitKnockoutStage| é muito simples. Ela apenas usa a função |initKnockoutStage| da versão não
+probabilística para gerar a LTree e coloca essa árvore no monad Dist.
 \begin{code}
-pinitKnockoutStage = undefined
-
+pinitKnockoutStage :: [[Team]] -> Dist (LTree Team)
+pinitKnockoutStage = return . initKnockoutStage
+\end{code}
+Na função |pgroupWinners|, começámos por gerar todas as combinações de resultados de jogos em 
+que gerámos todas as situações possíveis de vitórias, derrotas e empates com as respetivas probabilidades 
+dessas situações ocorrerem. Posteriormente, retirámos esse resultado do monad Dist e aplicamos o 
+tratamento |(best 2).consolidate| (como na |groupWinners| da versão não probabilística). Depois, 
+recolocámos o resultado no monad Dist para obter o resultado pretendido. 
+\begin{code}
 pgroupWinners :: (Match -> Dist (Maybe Team)) -> [Match] -> Dist [Team]
-pgroupWinners = undefined
+pgroupWinners crit m = D $ map (((best 2).consolidate.concat) >< id) no_monad_combs
+    where
+        aux = map (pmatchResult crit) m; 
+        combs = sequence aux;
+        no_monad_combs = (\(D k) -> k) combs 
 
-pmatchResult = undefined
+\end{code}
+A função |pmatchResult| calcula as possbilidades do resultado de um jogo, isto é, retorna as probabilidades
+de, num jogo, uma equipa ganhar, perder ou empatar (se for o caso).
+\begin{code}
+pmatchResult :: (Match -> Dist (Maybe Team)) -> Match -> Dist [(Team,Int)]
+pmatchResult f m@(e1,e2) = D (empate ++ e1_ ++ e2_)
+    where
+        criteria = (\(D x) -> x) (f m)
+        maybe_prob_empate = List.lookup Nothing criteria 
+        maybe_prob_e1 = List.lookup (Just e1) criteria
+        maybe_prob_e2 = List.lookup (Just e2) criteria
+        empate = if maybe_prob_empate == Nothing then [] else [([(e1,1),(e2,1)],(\(Just x) -> x) maybe_prob_empate)]
+        e1_ = if maybe_prob_e1 == Nothing then [] else [([(e1,3),(e2,0)],(\(Just x) -> x) maybe_prob_e1)]
+        e2_ = if maybe_prob_e2 == Nothing then [] else [([(e1,0),(e2,3)],(\(Just x) -> x) maybe_prob_e2)]
+
 \end{code}
 
 %----------------- Índice remissivo (exige makeindex) -------------------------%
