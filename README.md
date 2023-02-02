@@ -16,7 +16,7 @@
 
 </div>
 
-### Nota: 17 valores
+### Nota: 17 / 20
 
 <h3><i>Keywords</i></h3>
 CP, Cálculo de Programas, calculo de programas, uminho, miei, lei, lcc, engenharia informatica
